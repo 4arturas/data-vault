@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model hub_customer {
+  CUSTOMER_HK                      String                             @id /// Hash Keys(_HK): Hashed representation of business keys to aid join performace and consistency
+  CUSTOMER_ID                      String
+  LOAD_DATETIME                    DateTime /// For auditing
+  RECORD_SOURCE                    String /// Where we get this record from. For auditing
+  lnk_customer_has_order           lnk_customer_has_order[]
+  sat_web_customer_address_details sat_web_customer_address_details[]
+  sat_crm_customer_details         sat_crm_customer_details[]
+}
+
+model hub_order {
+  ORDER_HK                   String                       @id
+  ORDER_ID                   String
+  LOAD_DATETIME              DateTime
+  RECORD_SOURCE              String
+  lnk_customer_has_order     lnk_customer_has_order[]
+  lnk_order_comes_from_depot lnk_order_comes_from_depot[]
+  sat_crm_order_details      sat_crm_order_details[]
+}
+
+model hub_depot {
+  DEPOT_HK                   String                       @id
+  DEPOT_ID                   String
+  LOAD_DATETIME              DateTime
+  RECORD_SOURCE              String
+  lnk_order_comes_from_depot lnk_order_comes_from_depot[]
+}
+
+// Descriptive table
+model sat_web_customer_address_details {
+  CUSTOMER_HK    String       @id
+  CUSTOMER       hub_customer @relation(fields: [CUSTOMER_HK], references: [CUSTOMER_HK])
+  HASHDIFF       String // Satelite hashdiff: Checksum column for tracking changes to the payload. TODO: figure out how to compute it
+  ADDRESS_LINE_1 String // Descriptive data
+  ADDRESS_LINE_2 String // Descriptive data
+  ADDRESS_LINE_3 String // Descriptive data
+  POST_CODE      String // Descriptive data
+  LOAD_DATETIME  DateTime
+  RECORD_SOURCE  String
+}
+
+/// CRM stands for "Customer Relationship Management"
+model sat_crm_customer_details {
+  CUSTOMER_HK   String       @id
+  customer      hub_customer @relation(references: [CUSTOMER_HK], fields: [CUSTOMER_HK])
+  HASHDIFF      String
+  DATE_OF_BIRTH DateTime
+  FIRST_NAME    String
+  LAST_NAME     String
+  MOBILE_NUMBER String
+  LOAD_DATETIME String
+  RECORD_SOURCE String
+}
+
+model sat_crm_order_details {
+  ORDER_HK            String    @id
+  order               hub_order @relation(references: [ORDER_HK], fields: [ORDER_HK])
+  HASHDIFF            String
+  TOTAL_ORDER_VALUE   Decimal
+  ORDER_DATE          DateTime
+  DESTINATION_COUNTRY String
+  LOAD_DATETIME       DateTime
+  RECORD_SOURCE       String
+}
+
+model lnk_customer_has_order {
+  CUSTOMER_ORDER_HK String       @id
+  CUSTOMER_HK       String
+  CUSTOMER          hub_customer @relation(fields: [CUSTOMER_HK], references: [CUSTOMER_HK])
+  ORDER_HK          String
+  ORDER             hub_order    @relation(fields: [ORDER_HK], references: [ORDER_HK])
+  LOAD_DATETIME     DateTime
+  RECORD_SOURCE     String
+}
+
+model lnk_order_comes_from_depot {
+  ORDER_DEPOT_HK String    @id
+  ORDER_HK       String
+  ORDER          hub_order @relation(fields: [ORDER_HK], references: [ORDER_HK])
+  DEPOT_HK       String
+  DEPOT          hub_depot @relation(fields: [DEPOT_HK], references: [DEPOT_HK])
+  LOAD_DATETIME  DateTime
+  RECORD_SOURCE  String
+}

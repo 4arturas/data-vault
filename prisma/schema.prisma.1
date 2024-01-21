@@ -1,0 +1,270 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model HUB_COUNTRY {
+  HUB_COUNTRY_KEY      String                 @id
+  COUNTRY_ABBRV        String                 @unique(map: "sqlite_autoindex_HUB_COUNTRY_2")
+  HUB_Load_DTS         DateTime
+  HUB_Rec_SRC          String
+  LNK_LOCATION_COUNTRY LNK_LOCATION_COUNTRY[]
+  LNK_REGION_COUNTRY   LNK_REGION_COUNTRY[]
+  SAT_COUNTRIES        SAT_COUNTRIES[]
+}
+
+model HUB_DEPARTMENT {
+  HUB_DEPARTMENT_KEY        String                      @id
+  DEPARTMENT_ID             String                      @unique(map: "sqlite_autoindex_HUB_DEPARTMENT_2")
+  HUB_Load_DTS              DateTime
+  HUB_Rec_SRC               String
+  LNK_DEPARTMENT_LOCATIONS  LNK_DEPARTMENT_LOCATIONS[]
+  LNK_EMPLOYEE_CURRENT_INFO LNK_EMPLOYEE_CURRENT_INFO[]
+  LNK_EMPLOYEE_DEPARTMENTS  LNK_EMPLOYEE_DEPARTMENTS[]
+  LNK_JOB_HISTORY           LNK_JOB_HISTORY[]
+  SAT_DEPARTMENTS           SAT_DEPARTMENTS[]
+}
+
+model HUB_EMPLOYEE {
+  HUB_EMPLOYEE_SEQ                                                       String                      @id
+  EMPLOYEE_ID                                                            String                      @unique(map: "sqlite_autoindex_HUB_EMPLOYEE_2")
+  HUB_Load_DTS                                                           DateTime
+  HUB_Rec_SRC                                                            String
+  LNK_EMPLOYEE_CURRENT_INFO                                              LNK_EMPLOYEE_CURRENT_INFO[]
+  LNK_EMPLOYEE_DEPARTMENTS                                               LNK_EMPLOYEE_DEPARTMENTS[]
+  LNK_JOB_HISTORY                                                        LNK_JOB_HISTORY[]
+  RHLNK_EMPLOYEES_RHLNK_EMPLOYEES_HUB_EMPLOYEE_SEQToHUB_EMPLOYEE         RHLNK_EMPLOYEES[]           @relation("RHLNK_EMPLOYEES_HUB_EMPLOYEE_SEQToHUB_EMPLOYEE")
+  RHLNK_EMPLOYEES_RHLNK_EMPLOYEES_HUB_EMPLOYEE_MANAGER_SEQToHUB_EMPLOYEE RHLNK_EMPLOYEES[]           @relation("RHLNK_EMPLOYEES_HUB_EMPLOYEE_MANAGER_SEQToHUB_EMPLOYEE")
+}
+
+model HUB_JOB {
+  HUB_JOB_SEQ               String                      @id
+  JOB_ID                    String                      @unique(map: "sqlite_autoindex_HUB_JOB_2")
+  HUB_Load_DTS              DateTime
+  HUB_Rec_SRC               String
+  LNK_EMPLOYEE_CURRENT_INFO LNK_EMPLOYEE_CURRENT_INFO[]
+  LNK_JOB_HISTORY           LNK_JOB_HISTORY[]
+  SAT_JOBS                  SAT_JOBS[]
+}
+
+model HUB_LOCATION {
+  HUB_LOCATION_KEY         String                     @id
+  LOCATION_NAME            String                     @unique(map: "sqlite_autoindex_HUB_LOCATION_2")
+  HUB_Load_DTS             DateTime
+  HUB_Rec_SRC              String
+  LNK_DEPARTMENT_LOCATIONS LNK_DEPARTMENT_LOCATIONS[]
+  LNK_EMPLOYEE_DEPARTMENTS LNK_EMPLOYEE_DEPARTMENTS[]
+  LNK_LOCATION_COUNTRY     LNK_LOCATION_COUNTRY[]
+  SAT_LOCATIONS            SAT_LOCATIONS[]
+}
+
+model HUB_REGION {
+  HUB_REGION_KEY     String               @id
+  REGION_NAME        String               @unique(map: "sqlite_autoindex_HUB_REGION_2")
+  HUB_Load_DTS       DateTime
+  HUB_Rec_SRC        String
+  LNK_REGION_COUNTRY LNK_REGION_COUNTRY[]
+  SAT_REGIONS        SAT_REGIONS[]
+}
+
+model HUB_START_DATE {
+  HUB_START_DATE_SEQ String            @id
+  START_DATE         DateTime          @unique(map: "sqlite_autoindex_HUB_START_DATE_2")
+  HUB_Load_DTS       DateTime
+  HUB_Rec_SRC        String
+  LNK_JOB_HISTORY    LNK_JOB_HISTORY[]
+}
+
+model LNK_DEPARTMENT_LOCATIONS {
+  LNK_DEPARTMENT_LOCATION_SEQ String         @id
+  HUB_DEPARTMENT_SEQ          String
+  HUB_LOCATION_SEQ            String
+  LNK_Load_DTS                DateTime
+  LNK_Rec_SRC                 String
+  HUB_DEPARTMENT              HUB_DEPARTMENT @relation(fields: [HUB_DEPARTMENT_SEQ], references: [HUB_DEPARTMENT_KEY], onDelete: NoAction, onUpdate: NoAction)
+  HUB_LOCATION                HUB_LOCATION   @relation(fields: [HUB_LOCATION_SEQ], references: [HUB_LOCATION_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([HUB_DEPARTMENT_SEQ, HUB_LOCATION_SEQ], map: "sqlite_autoindex_LNK_DEPARTMENT_LOCATIONS_2")
+  @@index([HUB_DEPARTMENT_SEQ, HUB_LOCATION_SEQ], map: "LNK_DEPARTMENT_LOCATIONS_IDX1")
+}
+
+model LNK_EMPLOYEE_CURRENT_INFO {
+  LNK_EMPLOYEES_SEQ  String          @id
+  HUB_EMPLOYEE_SEQ   String
+  HUB_DEPARTMENT_SEQ String
+  HUB_JOB_SEQ        String
+  LNK_Load_DTS       DateTime
+  LNK_Rec_SRC        String
+  HUB_JOB            HUB_JOB         @relation(fields: [HUB_JOB_SEQ], references: [HUB_JOB_SEQ], onDelete: NoAction, onUpdate: NoAction)
+  HUB_DEPARTMENT     HUB_DEPARTMENT  @relation(fields: [HUB_DEPARTMENT_SEQ], references: [HUB_DEPARTMENT_KEY], onDelete: NoAction, onUpdate: NoAction)
+  HUB_EMPLOYEE       HUB_EMPLOYEE    @relation(fields: [HUB_EMPLOYEE_SEQ], references: [HUB_EMPLOYEE_SEQ], onDelete: NoAction, onUpdate: NoAction)
+  SAT_EMPLOYEES      SAT_EMPLOYEES[]
+
+  @@unique([HUB_EMPLOYEE_SEQ, HUB_DEPARTMENT_SEQ, HUB_JOB_SEQ], map: "sqlite_autoindex_LNK_EMPLOYEE_CURRENT_INFO_2")
+  @@index([HUB_JOB_SEQ, HUB_DEPARTMENT_SEQ, HUB_EMPLOYEE_SEQ], map: "LNK_EMPLOYEE_CURRENT_INFO_IDX1")
+}
+
+model LNK_EMPLOYEE_DEPARTMENTS {
+  LNK_DEPARTMENTS_SEQ String         @id
+  HUB_EMPLOYEE_SEQ    String
+  HUB_DEPARTMENT_SEQ  String
+  HUB_LOCATION_SEQ    String
+  LNK_Load_DTS        DateTime
+  LNK_Rec_SRC         String
+  HUB_DEPARTMENT      HUB_DEPARTMENT @relation(fields: [HUB_DEPARTMENT_SEQ], references: [HUB_DEPARTMENT_KEY], onDelete: NoAction, onUpdate: NoAction)
+  HUB_EMPLOYEE        HUB_EMPLOYEE   @relation(fields: [HUB_EMPLOYEE_SEQ], references: [HUB_EMPLOYEE_SEQ], onDelete: NoAction, onUpdate: NoAction)
+  HUB_LOCATION        HUB_LOCATION   @relation(fields: [HUB_LOCATION_SEQ], references: [HUB_LOCATION_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([HUB_EMPLOYEE_SEQ, HUB_DEPARTMENT_SEQ, HUB_LOCATION_SEQ], map: "sqlite_autoindex_LNK_EMPLOYEE_DEPARTMENTS_2")
+  @@index([HUB_DEPARTMENT_SEQ, HUB_LOCATION_SEQ, HUB_EMPLOYEE_SEQ], map: "LNK_EMPLOYEE_DEPARTMENTS_IDX1")
+}
+
+model LNK_JOB_HISTORY {
+  LNK_JOB_HISTORY_SEQ String            @id
+  HUB_EMPLOYEE_SEQ    String
+  HUB_DEPARTMENT_SEQ  String
+  HUB_JOB_SEQ         String
+  HUB_START_DATE_SEQ  String
+  LNK_Load_DTS        DateTime
+  LNK_Rec_SRC         String
+  HUB_DEPARTMENT      HUB_DEPARTMENT    @relation(fields: [HUB_DEPARTMENT_SEQ], references: [HUB_DEPARTMENT_KEY], onDelete: NoAction, onUpdate: NoAction)
+  HUB_EMPLOYEE        HUB_EMPLOYEE      @relation(fields: [HUB_EMPLOYEE_SEQ], references: [HUB_EMPLOYEE_SEQ], onDelete: NoAction, onUpdate: NoAction)
+  HUB_JOB             HUB_JOB           @relation(fields: [HUB_JOB_SEQ], references: [HUB_JOB_SEQ], onDelete: NoAction, onUpdate: NoAction)
+  HUB_START_DATE      HUB_START_DATE    @relation(fields: [HUB_START_DATE_SEQ], references: [HUB_START_DATE_SEQ], onDelete: NoAction, onUpdate: NoAction)
+  SAT_JOB_HISTORY     SAT_JOB_HISTORY[]
+
+  @@unique([HUB_EMPLOYEE_SEQ, HUB_DEPARTMENT_SEQ, HUB_JOB_SEQ, HUB_START_DATE_SEQ], map: "sqlite_autoindex_LNK_JOB_HISTORY_2")
+}
+
+model LNK_LOCATION_COUNTRY {
+  LNK_LOCATION_KEY String       @id
+  HUB_LOCATION_KEY String
+  HUB_COUNTRY_KEY  String
+  LNK_Load_DTS     DateTime
+  LNK_Rec_SRC      String
+  HUB_COUNTRY      HUB_COUNTRY  @relation(fields: [HUB_COUNTRY_KEY], references: [HUB_COUNTRY_KEY], onDelete: NoAction, onUpdate: NoAction)
+  HUB_LOCATION     HUB_LOCATION @relation(fields: [HUB_LOCATION_KEY], references: [HUB_LOCATION_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([HUB_LOCATION_KEY, HUB_COUNTRY_KEY], map: "sqlite_autoindex_LNK_LOCATION_COUNTRY_2")
+  @@index([HUB_COUNTRY_KEY, HUB_LOCATION_KEY], map: "LNK_LOCATION_Country_IDX1")
+}
+
+model LNK_REGION_COUNTRY {
+  LNK_REGION_COUNTRY_KEY String      @id
+  HUB_REGION_KEY         String
+  HUB_COUNTRY_KEY        String
+  COUNTRY_ABBRV          String
+  REGION_NAME            String
+  LNK_Load_DTS           DateTime
+  LNK_Rec_SRC            String
+  HUB_REGION             HUB_REGION  @relation(fields: [HUB_REGION_KEY], references: [HUB_REGION_KEY], onDelete: NoAction, onUpdate: NoAction)
+  HUB_COUNTRY            HUB_COUNTRY @relation(fields: [HUB_COUNTRY_KEY], references: [HUB_COUNTRY_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([HUB_REGION_KEY, HUB_COUNTRY_KEY], map: "sqlite_autoindex_LNK_REGION_COUNTRY_2")
+  @@index([HUB_REGION_KEY, HUB_COUNTRY_KEY], map: "LNK_Region_Countries_IDX1")
+}
+
+model RHLNK_EMPLOYEES {
+  RHLNK_EMPLOYEES_SEQ                                                 String       @id
+  HUB_EMPLOYEE_MANAGER_SEQ                                            String
+  HUB_EMPLOYEE_SEQ                                                    String
+  RHLNK_Load_DTS                                                      DateTime
+  RHLNK_Rec_SRC                                                       String
+  HUB_EMPLOYEE_RHLNK_EMPLOYEES_HUB_EMPLOYEE_SEQToHUB_EMPLOYEE         HUB_EMPLOYEE @relation("RHLNK_EMPLOYEES_HUB_EMPLOYEE_SEQToHUB_EMPLOYEE", fields: [HUB_EMPLOYEE_SEQ], references: [HUB_EMPLOYEE_SEQ], onDelete: NoAction, onUpdate: NoAction)
+  HUB_EMPLOYEE_RHLNK_EMPLOYEES_HUB_EMPLOYEE_MANAGER_SEQToHUB_EMPLOYEE HUB_EMPLOYEE @relation("RHLNK_EMPLOYEES_HUB_EMPLOYEE_MANAGER_SEQToHUB_EMPLOYEE", fields: [HUB_EMPLOYEE_MANAGER_SEQ], references: [HUB_EMPLOYEE_SEQ], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([HUB_EMPLOYEE_MANAGER_SEQ, HUB_EMPLOYEE_SEQ], map: "sqlite_autoindex_RHLNK_EMPLOYEES_2")
+  @@index([HUB_EMPLOYEE_MANAGER_SEQ, HUB_EMPLOYEE_SEQ], map: "RHLNK_EMPLOYEES_IDX1")
+}
+
+model SAT_COUNTRIES {
+  HUB_COUNTRY_KEY String
+  SAT_Load_DTS    DateTime
+  HASH_DIFF       String
+  SAT_Rec_SRC     String
+  COUNTRY_NAME    String
+  HUB_COUNTRY     HUB_COUNTRY @relation(fields: [HUB_COUNTRY_KEY], references: [HUB_COUNTRY_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([HUB_COUNTRY_KEY, SAT_Load_DTS])
+}
+
+model SAT_DEPARTMENTS {
+  HUB_DEPARTMENT_SEQ String
+  SAT_Load_DTS       DateTime
+  SAT_LOAD_EDTS      DateTime?
+  DEPARTMENT_NAME    String?
+  SAT_Rec_SRC        String
+  HUB_DEPARTMENT     HUB_DEPARTMENT @relation(fields: [HUB_DEPARTMENT_SEQ], references: [HUB_DEPARTMENT_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([HUB_DEPARTMENT_SEQ, SAT_Load_DTS])
+}
+
+model SAT_EMPLOYEES {
+  LNK_EMPLOYEES_SEQ         String
+  SAT_Load_DTS              DateTime
+  SAT_LOAD_EDTS             DateTime?
+  FIRST_NAME                String?
+  LAST_NAME                 String?
+  EMAIL                     String?
+  PHONE_NUMBER              String?
+  HIRE_DATE                 DateTime?
+  SALARY                    Unsupported("number(8,2)")?
+  COMMISSION_PCT            Unsupported("number(2,2)")?
+  SAT_Rec_SRC               String
+  LNK_EMPLOYEE_CURRENT_INFO LNK_EMPLOYEE_CURRENT_INFO   @relation(fields: [LNK_EMPLOYEES_SEQ], references: [LNK_EMPLOYEES_SEQ], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([LNK_EMPLOYEES_SEQ, SAT_Load_DTS])
+}
+
+model SAT_JOBS {
+  HUB_JOB_SEQ   String
+  SAT_Load_DTS  DateTime
+  SAT_LOAD_EDTS DateTime?
+  JOB_TITLE     String?
+  MIN_SALARY    String?
+  MAX_SALARY    String?
+  SAT_Rec_SRC   String
+  HUB_JOB       HUB_JOB   @relation(fields: [HUB_JOB_SEQ], references: [HUB_JOB_SEQ], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([HUB_JOB_SEQ, SAT_Load_DTS])
+}
+
+model SAT_JOB_HISTORY {
+  LNK_JOB_HISTORY_SEQ String
+  SAT_Load_DTS        DateTime
+  SAT_LOAD_EDTS       DateTime?
+  END_DATE            DateTime?
+  SAT_Rec_SRC         String
+  LNK_JOB_HISTORY     LNK_JOB_HISTORY @relation(fields: [LNK_JOB_HISTORY_SEQ], references: [LNK_JOB_HISTORY_SEQ], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([LNK_JOB_HISTORY_SEQ, SAT_Load_DTS])
+}
+
+model SAT_LOCATIONS {
+  HUB_LOCATION_KEY String
+  SAT_Load_DTS     DateTime
+  HASH_DIFF        String
+  SAT_Rec_SRC      String
+  STREET_ADDRESS   String?
+  CITY             String?
+  STATE_PROVINCE   String?
+  POSTAL_CODE      String?
+  HUB_LOCATION     HUB_LOCATION @relation(fields: [HUB_LOCATION_KEY], references: [HUB_LOCATION_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([HUB_LOCATION_KEY, SAT_Load_DTS])
+}
+
+model SAT_REGIONS {
+  HUB_REGION_KEY String
+  SAT_Load_DTS   DateTime
+  REGION_ID      Int
+  HASH_DIFF      String
+  SAT_Rec_SRC    String
+  HUB_REGION     HUB_REGION @relation(fields: [HUB_REGION_KEY], references: [HUB_REGION_KEY], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([HUB_REGION_KEY, SAT_Load_DTS])
+}

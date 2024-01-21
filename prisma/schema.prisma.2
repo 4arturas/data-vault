@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model HUB_Emploee {
+  HK_Emploee_ID           String                    @id
+  Emp_ID                  String
+  LOAD_DTS                DateTime
+  REC_SRC                 String
+  SAT_Emp                 SAT_Emploee[]
+  LINK_Emploee_Project    LINK_Emploee_Project[]
+  LINK_Emploee_Department LINK_Emploee_Department[]
+  SAT_Address             SAT_Address[]
+}
+
+model SAT_Emploee {
+  HK_Emploee_ID String
+  emploee       HUB_Emploee @relation(fields: [HK_Emploee_ID], references: [HK_Emploee_ID])
+  LOAD_DTS      DateTime    @id
+  Name          String
+  Gender        String
+  Birthdate     DateTime
+  REC_STR       String
+}
+
+model SAT_Address {
+  HK_Emploee_ID String
+  emploee       HUB_Emploee @relation(fields: [HK_Emploee_ID], references: [HK_Emploee_ID])
+  Address       String
+  City          String
+  LOAD_DTS      DateTime    @id
+  REC_STR       String
+}
+
+model HUB_Department {
+  HK_Department_ID        String                    @id
+  Department_ID           String
+  LOAD_DTS                DateTime
+  REC_SRC                 String
+  SAT_Department          SAT_Department[]
+  LINK_Emploee_Department LINK_Emploee_Department[]
+}
+
+model SAT_Department {
+  HK_Department_ID String
+  department       HUB_Department @relation(fields: [HK_Department_ID], references: [HK_Department_ID])
+  LOAD_DTS         DateTime       @id
+  Dep_Name         String
+  Dep_Code         String
+  REC_SRC          String
+}
+
+model HUB_Project {
+  HK_Project_ID        String                 @id
+  Project_ID           String
+  LOAD_DTS             DateTime
+  REC_SRC              String
+  SAT_Project          SAT_Project[]
+  LINK_Emploee_Project LINK_Emploee_Project[]
+}
+
+model SAT_Project {
+  HK_Project_ID String
+  project       HUB_Project @relation(fields: [HK_Project_ID], references: [HK_Project_ID])
+  LOAD_DTS      DateTime    @id
+  Project_Name  String
+  Project_Code  String
+  REC_SRC       String
+}
+
+model LINK_Emploee_Project {
+  HK_L_Emploee_Project String      @id
+  HK_Emploee_ID        String
+  emploee              HUB_Emploee @relation(fields: [HK_Emploee_ID], references: [HK_Emploee_ID])
+  HK_Project_ID        String
+  project              HUB_Project @relation(fields: [HK_Project_ID], references: [HK_Project_ID])
+  LOAD_DTS             DateTime
+  REC_SRC              String
+}
+
+model LINK_Emploee_Department {
+  HK_L_Emploee_Department String         @id
+  HK_Emploee_ID           String
+  emploee                 HUB_Emploee    @relation(fields: [HK_Emploee_ID], references: [HK_Emploee_ID])
+  HK_Department_ID        String
+  department              HUB_Department @relation(fields: [HK_Department_ID], references: [HK_Department_ID])
+  LOAD_DTS                DateTime
+  REC_SRC                 String
+}
